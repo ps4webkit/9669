@@ -1,0 +1,38 @@
+CACHE MANIFEST
+# Personal PS4 13.02 / 13.04 / 13.50 / 13.52 / 14.00 Host · revision 10.8 · GoldHEN 2.4b18.13 and Afterglow 14.00
+# build 10.8-0e0a18fd20a7ad44
+
+CACHE:
+index.html
+style.css
+refresh.css
+ui.js
+panels.js
+goldhen.bin
+afterglow/index.html
+afterglow/jb.html
+afterglow/jb.js
+afterglow/core.js
+afterglow/mem.js
+afterglow/int64.js
+afterglow/ps4_offsets.js
+afterglow/afterglow.js
+afterglow/patchset-1400.bin
+afterglow/patchset-1352.bin
+afterglow/goldhen.bin
+engine/launch.html
+engine/launch.html?log=1
+engine/jb.js
+engine/jb.js?v=19
+engine/core.js
+engine/core.js?v=10
+engine/mem.js
+engine/int64.js
+engine/ps4_offsets.js
+engine/rpc_worker.js
+engine/patches/1302.bin
+engine/patches/1350.bin
+engine/patches/1352.bin
+
+NETWORK:
+*
