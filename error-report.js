@@ -8,7 +8,7 @@
   var module=path.indexOf('/rawgame4/')!==-1?'RawGame4 '+(path.indexOf('poops')!==-1?'Poops':'Lapse'):
     path.indexOf('/webkitty/')!==-1?'WebKitty':
     path.indexOf('/afterglow/')!==-1?'Afterglow':'MCFORT9669';
-  var current=null, ended=false, latestLine='', panel=null, content=null, scheduled=false;
+  var current=null, ended=false, latestLine='', diagnostic='', panel=null, content=null, scheduled=false;
   function save(key,value){try{localStorage.setItem(key,JSON.stringify(value));}catch(e){}}
   function read(key){try{return JSON.parse(localStorage.getItem(key)||'null');}catch(e){return null;}}
   function remove(key){try{localStorage.removeItem(key);}catch(e){}}
@@ -42,6 +42,15 @@
     row('Сообщение',interrupted?'Консоль или браузер закрылись до подтверждения результата. Точная причина неизвестна.':data.message||'Ошибка без подробностей',true);
     if(data.detail&&data.detail!==data.message)row('Строка журнала',data.detail,true);
     row('Время',data.time||'—');
+    if(!interrupted&&data.fw==='11.00'&&data.module==='RawGame4 Lapse'&&
+       /^(?:REPAIRED -- NO REBOOT NEEDED|no win in \d+ attempts)/i.test(data.stage||'')){
+      var alternate=document.createElement('p');
+      alternate.textContent='На 11.00 можно попробовать другой модуль из этого комплекта после завершённой безопасной очистки.';
+      content.appendChild(alternate);
+      var link=document.createElement('a');link.href='../webkitty/index.html?source=mcfort9669';
+      link.textContent='Открыть WebKitty для 11.00';link.style.color='#89dcff';
+      content.appendChild(link);
+    }
     panel.hidden=false;
   }
   function writeActive(){if(current)save(activeKey,current);}
@@ -49,7 +58,7 @@
     ended=false;
     var previous=read(lastKey);if(previous&&previous.seen===false){previous.seen=true;save(lastKey,previous);}
     current={fw:fw,module:name||module,stage:'Запуск модуля',message:'',detail:'',time:new Date().toLocaleString('ru-RU')};
-    latestLine='';writeActive();
+    latestLine='';diagnostic='';writeActive();
   }
   function stage(value){
     if(!current||!value)return;
@@ -63,11 +72,18 @@
     if(current && /^(?:stage|step)\b/i.test(line))stage(line);
     if(current&&(color==='red'||/^(?:Error:|FAILED\b|THREW\b)/i.test(line)))fail(line);
   }
+  function note(value){
+    var line=clean(value);if(!line||!current)return;
+    latestLine=line;
+    if(/(?:STEP4D-FAILED|THREW|PROOF-FAIL|PAYLOAD-THREW|KPATCH-FETCH-THREW|PAYLOAD-FETCH-THREW|ERROR|MISSING)/i.test(line)){
+      diagnostic=line;current.detail=line;writeActive();
+    }
+  }
   function fail(message,detail){
     if(ended)return;
     if(!current)start(module);
     current.message=clean(message)||'Ошибка без подробностей';
-    current.detail=clean(detail||latestLine);
+    current.detail=clean(diagnostic||detail||latestLine);
     current.time=new Date().toLocaleString('ru-RU');
     current.seen=false;save(lastKey,current);remove(activeKey);show(current,false);
     current=null;ended=true;
@@ -96,9 +112,16 @@
         if(module==='WebKitty'&&line.style&&line.style.color==='red'){fail(latestLine);return;}
       }
     }
-    if(module.indexOf('RawGame4')===0&&value==='ALL DONE'){success();return;}
-    if(module.indexOf('RawGame4')===0&&
-       (/(?:REBOOT NEEDED|ROOT .* NO REBOOT|REPAIRED --)/i.test(value))){fail('GoldHEN не запущен: '+value,latestLine);return;}
+    if(module.indexOf('RawGame4')===0){
+      if(value==='ALL DONE'){success();return;}
+      if(/REPAIRED -- tearing down/i.test(value))return;
+      if(/^no win in \d+ attempts/i.test(value)){
+        fail('Цепочка Lapse не сработала в этом запуске: '+value,latestLine);return;
+      }
+      if(/^(?:REBOOT THE CONSOLE|FREED BUT NOT RECLAIMED|ROOT .* NO REBOOT|REPAIRED -- NO REBOOT)/i.test(value)){
+        fail('GoldHEN не запущен: '+value,latestLine);return;
+      }
+    }
     if(state&&/\b(?:bad|fail)\b/i.test(state.className||'')){fail(value||'Сбой модуля',latestLine);return;}
     if(document.body&&/\bfail\b/.test(document.body.className||'')&&module==='Afterglow'){
       fail(msg&&msg.textContent||value||'Ошибка Afterglow',latestLine);
@@ -114,7 +137,7 @@
     });
     if(module==='Afterglow')observer.observe(document.body,{attributes:true,attributeFilter:['class']});
   }
-  window.hostErrorReport={start:start,stage:stage,onLog:onLog,fail:fail,success:success,restore:restore};
+  window.hostErrorReport={start:start,stage:stage,note:note,onLog:onLog,fail:fail,success:success,restore:restore};
   window.addEventListener('error',function(e){if(current)fail(e.message||'Ошибка JavaScript');});
   window.addEventListener('unhandledrejection',function(e){if(current)fail(e.reason&&e.reason.message||e.reason||'Необработанная ошибка');});
   function boot(){

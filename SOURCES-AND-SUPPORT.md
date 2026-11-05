@@ -45,3 +45,7 @@ reads that saved choice. GoldHEN builds support several firmwares each.
 The firmware allowlist intersects the upstream WebKit chain and the supplied
 GoldHEN v2.4b18.13 README firmware list; 6.70 is excluded because GoldHEN
 is not listed for it.
+
+## v11.4 — RawGame4 report
+
+The report no longer treats the intermediate `REPAIRED -- tearing down...` state as a completed failure. RawGame4 reports now retain the earlier `STEP4D-FAILED` or proof error instead of merely showing a later summary. On 11.00, a safe completed failure offers a link to the bundled WebKitty module. Exploit primitives and firmware offsets were not changed; actual reliability needs console test.
