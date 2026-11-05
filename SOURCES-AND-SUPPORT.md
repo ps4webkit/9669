@@ -61,3 +61,7 @@ A tester reported five failures with WebKitty CSSFontFace + Netctrl at `Unable t
 ## v11.7 — tester feedback
 
 The tester confirmed successful WebKitty CSSFontFace + Lapse runs on 11.00 (3 success, 4 power-offs in an early sample). The shared custom error overlay is disabled; a stale interrupted report is cleared on the next visit and prior failure is removed after success. WebKitty 11.00 now requires a manual start; auto-retry, auto-launch and reload-after-success are disabled to prevent unrequested consecutive exploit attempts. The underlying exploit and payload are unchanged. The PS4 native low-memory dialog is controlled by the console, not this host. Hardware success-rate improvement is not established.
+
+## v11.8 — restore tested retry flow
+
+FW 11.00 v11.7 disabled WebKitty auto-retry and persisted that disabled value. This prevented the tester’s previously working reload/retry sequence after a PS4 memory error. The upstream retry behavior has been restored; a one-time migration re-enables the setting without triggering a retry on initial page load. WebKitty intentionally keeps `user.blockJailbreak` set after a click, so same-page clicks do not rerun the exploit. The custom report dialog remains removed. No kernel exploit or payload bytes changed.

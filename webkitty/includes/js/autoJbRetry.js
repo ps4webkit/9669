@@ -1,15 +1,6 @@
 // Handles automatic jailbreak retry logic and countdown timers.
-function manualOnly1100() {
-    return /PlayStation 4[ \/]11\.00\b/i.test(navigator.userAgent);
-}
 
 function setAutoJbRetry(checked) {
-    if (manualOnly1100()) {
-        storage.set('autoJbRetry', false);
-        storage.session.remove('autoJbRetry');
-        if (ui.autoJbRetry) ui.autoJbRetry.checked = false;
-        return;
-    }
     storage.set('autoJbRetry', checked);
     storage.session.set('autoJbRetry', checked);
 
@@ -18,27 +9,19 @@ function setAutoJbRetry(checked) {
 }
 
 function setAutoJb(checked) {
-    if (manualOnly1100()) {
-        storage.set('autoJb', false);
-        storage.session.remove('autoJb');
-        if (ui.autoJb) ui.autoJb.checked = false;
-        return;
-    }
     storage.set('autoJb', checked);
     storage.session.set('autoJb', checked);
 }
 
 // When jailbreak succeeds, this will be stopped
 function autoJailbreak() {
-    if (manualOnly1100()) {
-        storage.session.remove('jailbreakNow');
-        storage.set('autoJbRetry', false);
+    // v11.7 forced this setting off on FW 11.00. Restore the former retry
+    // behavior once, without starting a retry merely by opening the page.
+    if (/PlayStation 4[ \/]11\.00\b/i.test(navigator.userAgent)
+        && storage.getString('mcfort9669.1100.retry-restored.v11.8', null) !== 'yes') {
+        storage.set('autoJbRetry', true);
         storage.session.remove('autoJbRetry');
-        storage.set('autoJb', false);
-        storage.session.remove('autoJb');
-        if (ui.autoJbRetry) ui.autoJbRetry.checked = false;
-        if (ui.autoJb) ui.autoJb.checked = false;
-        return;
+        storage.set('mcfort9669.1100.retry-restored.v11.8', 'yes');
     }
     // used for 6.7x jailbreak when userland is loaded
     var jbNow = storage.session.getBoolean('jailbreakNow', false);
@@ -100,12 +83,6 @@ function autoJailbreakTimer(permanentJb) {
 }
 
 function setReloadAfterJb(checked) {
-    if (manualOnly1100()) {
-        storage.set('reloadAfterJb', false);
-        var input = document.getElementById('reloadAfterJbInput');
-        if (input) input.checked = false;
-        return;
-    }
     storage.set('reloadAfterJb', checked);
 }
 
