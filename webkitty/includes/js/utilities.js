@@ -66,6 +66,7 @@ function log(message, color, consoleEl) {
 }
 
 function getReloadAfterJbValue() {
+    if (/PlayStation 4[ \/]11\.00\b/i.test(navigator.userAgent)) return false;
     return storage.getBoolean('reloadAfterJb', false);
 }
 

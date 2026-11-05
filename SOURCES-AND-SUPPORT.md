@@ -57,3 +57,7 @@ FW 11.00 uses bundled WebKitty by default. On the first v11.5 launch it selects 
 ## v11.6 — FW 11.00 Netctrl field report
 
 A tester reported five failures with WebKitty CSSFontFace + Netctrl at `Unable to leak kqueue`. This is inside the kernel chain before GoldHEN; in `netctrl.js`, leak_kqueue exhausts its kqueue attempts. An issue in the original CSSFontFace project (#32) reports Netctrl instability on a PS4 Pro 11.00 and better results with Lapse. First v11.6 launch now sets CSSFontFace + Lapse (chain 4) for FW 11.00; later choices within WebKitty are respected. No kernel offsets, race timings, or exploit primitives were changed. Hardware verification is pending.
+
+## v11.7 — tester feedback
+
+The tester confirmed successful WebKitty CSSFontFace + Lapse runs on 11.00 (3 success, 4 power-offs in an early sample). The shared custom error overlay is disabled; a stale interrupted report is cleared on the next visit and prior failure is removed after success. WebKitty 11.00 now requires a manual start; auto-retry, auto-launch and reload-after-success are disabled to prevent unrequested consecutive exploit attempts. The underlying exploit and payload are unchanged. The PS4 native low-memory dialog is controlled by the console, not this host. Hardware success-rate improvement is not established.
