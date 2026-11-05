@@ -69,11 +69,11 @@
       var target=lapse?'rawgame4/run_lapse.html':poops?'rawgame4/run_poops.html':'webkitty/index.html?source=mcfort9669';
       if(legacy&&firmware==='11.00'){
         try{
-          // On the first v11.5 launch use a different chain from RawGame4's SlopKit Lapse.
+          // On the first v11.6 launch use CSSFontFace + Lapse for FW 11.00.
           // A later choice made inside WebKitty remains under the user's control.
-          if(localStorage.getItem('mcfort9669.1100.webkitty.pref.v11.5')!=='set'){
-            localStorage.setItem('exploitChain','3'); // CSSFontFace + Netctrl
-            localStorage.setItem('mcfort9669.1100.webkitty.pref.v11.5','set');
+          if(localStorage.getItem('mcfort9669.1100.webkitty.pref.v11.6')!=='set'){
+            localStorage.setItem('exploitChain','4'); // CSSFontFace + Lapse
+            localStorage.setItem('mcfort9669.1100.webkitty.pref.v11.6','set');
           }
         }catch(e){}
       }

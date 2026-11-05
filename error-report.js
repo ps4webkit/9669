@@ -40,6 +40,9 @@
     row('Модуль',data.module||module);
     row('Последний этап',data.stage||'Не определён');
     row('Сообщение',interrupted?'Консоль или браузер закрылись до подтверждения результата. Точная причина неизвестна.':data.message||'Ошибка без подробностей',true);
+    if(!interrupted&&/Unable to leak kqueue/i.test((data.message||'')+' '+(data.detail||''))){
+      row('Что означает','Цепочка Netctrl остановилась до запуска GoldHEN. Для прошивки 11.00 после перезагрузки PS4 выберите в WebKitty CSSFontFace + Lapse. Успех не гарантирован.',true);
+    }
     if(data.detail&&data.detail!==data.message)row('Строка журнала',data.detail,true);
     row('Время',data.time||'—');
     if(!interrupted&&data.fw==='11.00'&&data.module==='RawGame4 Lapse'&&

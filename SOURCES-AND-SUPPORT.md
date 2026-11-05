@@ -53,3 +53,7 @@ The report no longer treats the intermediate `REPAIRED -- tearing down...` state
 ## v11.5 — firmware 11.00 trial route
 
 FW 11.00 uses bundled WebKitty by default. On the first v11.5 launch it selects CSSFontFace + Netctrl and GoldHEN v2.4b18.13; later selections within WebKitty are respected. The user may choose the existing RawGame4 Lapse route in Settings. This changes only routing and UI, not the kernel exploits. Neither route can be claimed more reliable without actual hardware test; reports should include the selected route. Other firmware routes remain unchanged.
+
+## v11.6 — FW 11.00 Netctrl field report
+
+A tester reported five failures with WebKitty CSSFontFace + Netctrl at `Unable to leak kqueue`. This is inside the kernel chain before GoldHEN; in `netctrl.js`, leak_kqueue exhausts its kqueue attempts. An issue in the original CSSFontFace project (#32) reports Netctrl instability on a PS4 Pro 11.00 and better results with Lapse. First v11.6 launch now sets CSSFontFace + Lapse (chain 4) for FW 11.00; later choices within WebKitty are respected. No kernel offsets, race timings, or exploit primitives were changed. Hardware verification is pending.
