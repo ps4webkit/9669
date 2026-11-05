@@ -3,12 +3,9 @@
   var $=function(id){return document.getElementById(id);};
   var demo=/(?:\?|&)demo=1(?:&|$)/.test(location.search), cache=window.applicationCache;
   var ua=navigator.userAgent.match(/PlayStation 4[ /]([\d.]+)/i), firmware=ua?ua[1]:null;
-  var original=['13.02','13.04','13.50','13.52','14.00'].indexOf(firmware)!==-1;
-  var lapse=['11.00','11.50','12.00','12.02'].indexOf(firmware)!==-1;
-  var poops=['12.50','12.52','13.00'].indexOf(firmware)!==-1;
-  var fwNumber=parseFloat(firmware), legacy=/^(?:5\.05|6\.7[012]|11\.02)$/.test(firmware||'') ||
-    (fwNumber>=7.00 && fwNumber<=10.71 && /^(?:7|8|9|10)\.\d\d$/.test(firmware||''));
-  var compatible=original||lapse||poops||legacy, ready=false, started=false, finished=false, frame=null;
+  var firmwareRoute=window.hostFirmware.route(firmware),original=firmwareRoute==='original'||firmwareRoute==='afterglow';
+  var lapse=firmwareRoute==='lapse',poops=firmwareRoute==='poops',legacy=firmwareRoute==='webkitty';
+  var compatible=!!firmwareRoute, ready=false, started=false, finished=false, frame=null;
   var startTime=0, timer=null, warningTimer=null, autoTimer=null, received=0, logs=[], lastMessage='', payloadSeen=false, activeStep=0, reused=false;
 
   var statsKey='alizhon.ps4.'+firmware+'.stats.v1',stats={success:0,failure:0,interrupted:0,pending:null},storageOK=true,runId=null,counted=false;
@@ -93,9 +90,9 @@
   function init(){
     readStats();step(1,'active');if(window.hostErrorReport)window.hostErrorReport.restore();
     if(demo){$('demoBanner').hidden=false;step(1,'done');cacheReady('[DEMO] Кэш и прошивка имитируются. Нажмите «ВЗЛОМ».');return;}
-    if(!ua){step(1,'failed');status('Откройте хост на PS4','Для поддерживаемых прошивок PS4 от 5.05 до 14.00.');$('buttonHint').textContent='';$('launch').disabled=false;log('[HOST] Браузер PS4 не обнаружен. Запуск отключён.','warn');return;}
+    if(!ua){step(1,'failed');status('Откройте хост на PS4','Точный список прошивок откройте в «Гайды» → «Поддержка прошивок».');$('buttonHint').textContent='';$('launch').disabled=false;log('[HOST] Браузер PS4 не обнаружен. Запуск отключён.','warn');return;}
     $('fwBadge').textContent='FW '+firmware;
-    if(!compatible){step(1,'failed');status('Прошивка не поддерживается','Обнаружена '+firmware+'. Для этой версии нет подходящего модуля в комплекте.');notice('Не запускайте файлы от другой прошивки.','error');return;}
+    if(!compatible){step(1,'failed');status('Прошивка не поддерживается','Обнаружена FW '+firmware+'. Нет модуля и подтверждённого GoldHEN для этой версии. Список — в гайдах.');notice('Взлом отключён. Не запускайте модуль от другой прошивки.','error');return;}
     step(1,'done');step(2,'active');log('[HOST] Обнаружена PS4 с прошивкой '+firmware+'. Модуль: '+(original?'MCFORT9669':lapse?'Lapse':poops?'Poops':'WebKitty')+'.','good');
     if(!cache){status('Офлайн-кэш недоступен','Браузер не предоставил AppCache. Установка офлайн-хоста не подтверждена.');notice('Откройте страницу в штатном браузере PS4. Если AppCache недоступен, этот комплект нельзя считать сохранённым офлайн.','error');step(2,'failed');return;}
     if(cache.status===1)cacheReady('[CACHE] Найден сохранённый офлайн-хост.');

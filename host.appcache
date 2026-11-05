@@ -1,12 +1,13 @@
 CACHE MANIFEST
-# MCFORT9669 v11.1 · firmware auto routing · 2026-11-05
-# build 11.1-97e63338089d5768-4a24bfb5
+# MCFORT9669 v11.2 · firmware auto routing · 2026-11-05
+# build 11.2-122271b9cac4a778d40c
 
 CACHE:
 index.html
 style.css
 refresh.css
 ui.js
+firmware-map.js
 error-report.js
 panels.js
 goldhen.bin

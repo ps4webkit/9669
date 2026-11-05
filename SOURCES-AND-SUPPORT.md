@@ -1,12 +1,12 @@
-# MCFORT9669 v11.0 — firmware routes
+# MCFORT9669 v11.2 — firmware routes
 
-The main page detects the PS4 firmware from the console User-Agent. Unsupported
+The main page detects the PS4 firmware from the console User-Agent and uses an exact firmware allowlist from firmware-map.js. Unsupported
 versions stop without starting a kernel chain. Existing 13.02/13.04/13.50/13.52
 and 14.00 modules remain unchanged.
 
 | Firmware | Local module | Source |
 | --- | --- | --- |
-| 5.05, 6.70–6.72, 7.00–10.71, 11.02 | webkitty/ | ArabPixel/WebKitty, AGPL-3.0-or-later |
+| 5.05/5.07, 6.71/6.72, listed 7.xx–10.xx, 11.02/11.52 | webkitty/ | ArabPixel/WebKitty, AGPL-3.0-or-later |
 | 11.00, 11.50, 12.00, 12.02 | rawgame4/ Lapse | rawgame4/rawgame4.github.io, MIT port plus third-party components |
 | 12.50, 12.52, 13.00 | rawgame4/ Poops | rawgame4/rawgame4.github.io |
 | 13.02, 13.04, 13.50, 13.52 | engine/ | Original host / raw13g |
@@ -34,3 +34,14 @@ visit if the browser or console exits before a result. This is a diagnostic clue
 not a kernel crash log or proof of the crash cause. The RawGame4 launch pages
 consume a one-time session token to prevent a restored page rerunning the exploit.
 
+
+## Version badge in v11.2
+
+The root GoldHEN badge names the actual bundled file for each route: RawGame4
+payload.bin matches WebKitty goldhen_v2.4b18.10.bin byte for byte; the
+original/Afterglow route uses 2.4b18.13. WebKitty starts with 2.4b18.13
+and permits a saved user selection or a different HEN flavor. The root badge
+reads that saved choice. GoldHEN builds support several firmwares each.
+The firmware allowlist intersects the upstream WebKit chain and the supplied
+GoldHEN v2.4b18.13 README firmware list; 6.70 is excluded because GoldHEN
+is not listed for it.
