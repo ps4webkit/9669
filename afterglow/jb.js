@@ -16,6 +16,7 @@ let lastMark = Date.now();
 let retryShown = false;
 
 function showNotice(text) {
+  if (window.hostErrorReport) window.hostErrorReport.fail(text, lines.length ? lines[lines.length - 1] : "");
   try {
     const box = document.createElement("div");
     box.className = "notice";
@@ -236,6 +237,10 @@ function finishUI(ok, ran) {
 /* Integrate the isolated run with the host's per-console counters only after
    the enabler result is known. A process crash leaves the attempt pending. */
 function recordHostResult(ok, already) {
+  if (window.hostErrorReport) {
+    if (ok || already) window.hostErrorReport.success();
+    else window.hostErrorReport.fail("Afterglow: GoldHEN не запущен", lines.length ? lines[lines.length - 1] : "");
+  }
   try {
     const key = "alizhon.ps4.14.00.stats.v1";
     const stats = JSON.parse(localStorage.getItem(key) || "null");

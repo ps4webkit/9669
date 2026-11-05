@@ -3,7 +3,12 @@
   var $=function(id){return document.getElementById(id);};
   var demo=/(?:\?|&)demo=1(?:&|$)/.test(location.search), cache=window.applicationCache;
   var ua=navigator.userAgent.match(/PlayStation 4[ /]([\d.]+)/i), firmware=ua?ua[1]:null;
-  var compatible=['13.02','13.04','13.50','13.52','14.00'].indexOf(firmware)!==-1, ready=false, started=false, finished=false, frame=null;
+  var original=['13.02','13.04','13.50','13.52','14.00'].indexOf(firmware)!==-1;
+  var lapse=['11.00','11.50','12.00','12.02'].indexOf(firmware)!==-1;
+  var poops=['12.50','12.52','13.00'].indexOf(firmware)!==-1;
+  var fwNumber=parseFloat(firmware), legacy=/^(?:5\.05|6\.7[012]|11\.02)$/.test(firmware||'') ||
+    (fwNumber>=7.00 && fwNumber<=10.71 && /^(?:7|8|9|10)\.\d\d$/.test(firmware||''));
+  var compatible=original||lapse||poops||legacy, ready=false, started=false, finished=false, frame=null;
   var startTime=0, timer=null, warningTimer=null, autoTimer=null, received=0, logs=[], lastMessage='', payloadSeen=false, activeStep=0, reused=false;
 
   var statsKey='alizhon.ps4.'+firmware+'.stats.v1',stats={success:0,failure:0,interrupted:0,pending:null},storageOK=true,runId=null,counted=false;
@@ -18,9 +23,9 @@
   function signal(text){$('hostSignal').hidden=!text;document.body.classList.toggle('signal-ready',!!text);if(text)$('hostSignalText').textContent=text;}
   function autoEnabled(){return !!(window.hostPreferences&&window.hostPreferences.autoStartEnabled());}
   function readyDisplay(){
-    var automatic=autoEnabled();status('Готово к запуску',automatic?'Автовзлом начнётся автоматически.':firmware==='14.00'?'Нажмите «ВЗЛОМ» для запуска Afterglow.':'Нажмите кнопку «ВЗЛОМ».');
+    var automatic=autoEnabled();status('Готово к запуску',automatic?(legacy?'Старый модуль откроется автоматически; после кэша подтвердите запуск в нём.':'Автовзлом начнётся автоматически.'):firmware==='14.00'?'Нажмите «ВЗЛОМ» для запуска Afterglow.':legacy?'Нажмите «ВЗЛОМ», затем дождитесь кэша и запуска во встроенном модуле.':!original?'Нажмите «ВЗЛОМ» для запуска модуля FW '+firmware+'.':'Нажмите кнопку «ВЗЛОМ».');
     signal((automatic?'АВТОВЗЛОМ':'ХОСТ ГОТОВ')+' · '+(demo?'ДЕМО':'FW '+firmware));
-    $('launch').textContent=automatic?'АВТО':'ВЗЛОМ';$('buttonHint').textContent=automatic?'Автовзлом включён':firmware==='14.00'?'Отдельная страница Afterglow':'Нажмите кнопку один раз';
+    $('launch').textContent=automatic?'АВТО':'ВЗЛОМ';$('buttonHint').textContent=automatic?'Автовзлом включён':firmware==='14.00'?'Отдельная страница Afterglow':!original?'Модуль прошивки '+firmware:'Нажмите кнопку один раз';
   }
   function scheduleAutoLaunch(){
     clearTimeout(autoTimer);autoTimer=null;
@@ -33,15 +38,15 @@
   function step(n,state){var el=$('step'+n);if(!el)return;el.className=state||'';el.querySelector('em').textContent=state==='done'?'Готово':state==='active'?'В работе':state==='failed'?'Ошибка':'Ожидание';if(state==='active')activeStep=n;updateLaunchProgress();}
   function progress(percent,text){$('cacheFill').style.width=Math.max(0,Math.min(100,percent))+'%';$('cachePercent').textContent=Math.round(percent)+'%';if(text)$('cacheText').textContent=text;}
   function stopAnimation(){document.body.classList.remove('running');clearInterval(timer);clearTimeout(warningTimer);}
-  function fail(title,description){if(finished)return;finished=true;finishStats('failure');stopAnimation();document.body.classList.add('error-state');signal('ЗАПУСК НЕ ЗАВЕРШЁН');$('launch').textContent='Запуск\nне завершён';status('Запуск не завершён','Откройте журнал для подробностей.');step(activeStep||3,'failed');$('buttonHint').textContent='Повторный запуск заблокирован';notice('Перед новой попыткой перезапустите PS4.','error');log(description,'bad');}
+  function fail(title,description){if(finished)return;finished=true;finishStats('failure');stopAnimation();document.body.classList.add('error-state');signal('ЗАПУСК НЕ ЗАВЕРШЁН');$('launch').textContent='Запуск\nне завершён';status('Запуск не завершён','Откройте журнал для подробностей.');step(activeStep||3,'failed');$('buttonHint').textContent='Повторный запуск заблокирован';notice('Перед новой попыткой перезапустите PS4.','error');log(description,'bad');if(window.hostErrorReport)window.hostErrorReport.fail(title,description);}
   function cacheReady(reason){ready=true;progress(100,'Файлы готовы');$('cacheProgress').hidden=true;step(2,'done');if(started)return;if(!compatible&&!demo)return;$('launch').disabled=false;readyDisplay();if(reason)log(reason,'good');if(autoEnabled())scheduleAutoLaunch();else $('launch').focus();}
-  function complete(){if(finished)return;finished=true;finishStats('success');stopAnimation();document.body.classList.add('done-state');signal(reused?'ВЗЛОМ УЖЕ АКТИВЕН':'GOLDHEN АКТИВЕН');$('launch').textContent=reused?'Взлом\nактивен':'Взлом\nактивирован';step(3,'done');step(4,'done');step(5,'done');status(reused?'Взлом уже активирован':'Запуск завершён',reused?'Повторное обращение не меняет статистику.':'GoldHEN — запуск подтверждён загрузчиком.');$('buttonHint').textContent='Готово';notice(demo?'Демонстрация. Реальный запуск не выполнялся.':'');log(demo?'[DEMO] Демонстрация завершена.':'[HOST] Получено итоговое подтверждение загрузчика.','good');}
+  function complete(){if(finished)return;finished=true;finishStats('success');if(window.hostErrorReport)window.hostErrorReport.success();stopAnimation();document.body.classList.add('done-state');signal(reused?'ВЗЛОМ УЖЕ АКТИВЕН':'GOLDHEN АКТИВЕН');$('launch').textContent=reused?'Взлом\nактивен':'Взлом\nактивирован';step(3,'done');step(4,'done');step(5,'done');status(reused?'Взлом уже активирован':'Запуск завершён',reused?'Повторное обращение не меняет статистику.':'GoldHEN — запуск подтверждён загрузчиком.');$('buttonHint').textContent='Готово';notice(demo?'Демонстрация. Реальный запуск не выполнялся.':'');log(demo?'[DEMO] Демонстрация завершена.':'[HOST] Получено итоговое подтверждение загрузчика.','good');}
   function processLine(text){
     if(finished||!started||typeof text!=='string')return;
     if(text.length>400)text=text.slice(0,400);
     var bad=/^(THREW|KPATCH-FETCH-THREW|PAYLOAD-FETCH-THREW)\b/.test(text);
     var interesting=/^(BUILD|FW |FW-STATUS|PRIMITIVE-OK|JB-ALREADY|JB-RELAUNCH|KPATCH-BLOB|PAYLOAD-BLOB|PAYLOAD-RUN|EG-VERDICT|PROOF-SUMMARY-FINAL|THREW|KPATCH-FETCH-THREW|PAYLOAD-FETCH-THREW)\b/.test(text)||/^PROOF-(?:OK|FAIL)\s+(?:PAYLOAD-RUNNING|eg-krw-ok|kernel-table-present|kpatch-table-present|payload-table-present|.*kpatch.*|.*jailbreak.*)/i.test(text);
-    if(interesting)log(text,bad?'bad':/^PROOF-OK|PRIMITIVE-OK/.test(text)?'good':'');
+    if(interesting){log(text,bad?'bad':/^PROOF-OK|PRIMITIVE-OK/.test(text)?'good':'');if(window.hostErrorReport)window.hostErrorReport.stage(text);}
     if(/^JB-ALREADY\b/.test(text)||/^EG-VERDICT\b.*(?:kpatched=already|reused=1)\b/.test(text)){reused=true;document.body.classList.add('reused-state');$('launch').textContent='Взлом\nактивен';finishStats('reused');log('[HOST] Система уже взломана. Повторное обращение не учитывается в статистике.','warn');}
     if(/^PRIMITIVE-OK\b/.test(text)){step(3,'done');step(4,'active');status('Выполняется системный этап','WebKit пройден. Подготавливаем систему.');}
     if(/^PAYLOAD-BLOB\b/.test(text)){status('Подготовка GoldHEN','Файл GoldHEN прочитан. Ожидаем запуска.');}
@@ -58,9 +63,18 @@
   function launch(){
     clearTimeout(autoTimer);autoTimer=null;
     if(started)return;
-    if(!demo&&!compatible){notice('Запуск разрешён только в браузере PlayStation 4 с прошивкой 13.02, 13.04, 13.50, 13.52 или 14.00. Для просмотра оформления на компьютере откройте адрес с ?demo=1.','warn');return;}
+    if(!demo&&!compatible){notice('Для этой прошивки нет проверенного встроенного модуля. На компьютере оформление доступно с ?demo=1.','warn');return;}
     if(!ready){notice('Дождитесь полного сохранения кэша.','warn');return;}
-    window.hostPanels.close(false);window.hostJournal.close();started=true;beginAttempt();startTime=Date.now();$('launch').disabled=true;document.body.classList.add('running');signal('ЗАПУСК · '+(demo?'ДЕМО':'FW '+firmware));$('launch').textContent='Взлом\nв процессе…';$('buttonHint').textContent='Не нажимайте повторно';status('Выполняется ВЗЛОМ','Выполняется WebKit. Пожалуйста, подождите.');step(3,'active');log(demo?'[DEMO] Только анимация и тестовые статусы.':'[HOST] Запуск цепочки для PS4 '+firmware+'.');timer=setInterval(updateClock,1000);
+    if(!demo&&(lapse||poops||legacy)){
+      // These separate upstream modules have their own UI and outcome. The root
+      // statistics must not record a successful or failed attempt without proof.
+      started=true;
+      var target=lapse?'rawgame4/run_lapse.html':poops?'rawgame4/run_poops.html':'webkitty/index.html?source=mcfort9669';
+      if(lapse||poops){try{sessionStorage.setItem('mcfort9669.route.once',target);}catch(e){started=false;notice('Не удалось подготовить запуск модуля: хранилище браузера недоступно.','error');return;}}
+      location.href=target;
+      return;
+    }
+    window.hostPanels.close(false);window.hostJournal.close();started=true;if(!demo&&window.hostErrorReport)window.hostErrorReport.start(firmware==='14.00'?'Afterglow':'MCFORT9669');beginAttempt();startTime=Date.now();$('launch').disabled=true;document.body.classList.add('running');signal('ЗАПУСК · '+(demo?'ДЕМО':'FW '+firmware));$('launch').textContent='Взлом\nв процессе…';$('buttonHint').textContent='Не нажимайте повторно';status('Выполняется ВЗЛОМ','Выполняется WebKit. Пожалуйста, подождите.');step(3,'active');log(demo?'[DEMO] Только анимация и тестовые статусы.':'[HOST] Запуск цепочки для PS4 '+firmware+'.');timer=setInterval(updateClock,1000);
     warningTimer=setTimeout(function(){if(!finished)notice('Запуск длится дольше обычного. Не запускайте вторую копию.','warn');},120000);
     if(demo){startDemo();return;}
     if(firmware==='14.00'){try{sessionStorage.setItem('mcfort9669.afterglow14.launch','1');location.href='afterglow/index.html';}catch(e){fail('Невозможно открыть Afterglow','Хранилище браузера недоступно: '+String(e));}return;}
@@ -77,12 +91,12 @@
   $('journalClose').addEventListener('click',function(){journal(false);});
   window.addEventListener('keydown',function(e){if((e.key==='Escape'||e.keyCode===27)&&!$('journal').hidden)journal(false);});
   function init(){
-    readStats();step(1,'active');
+    readStats();step(1,'active');if(window.hostErrorReport)window.hostErrorReport.restore();
     if(demo){$('demoBanner').hidden=false;step(1,'done');cacheReady('[DEMO] Кэш и прошивка имитируются. Нажмите «ВЗЛОМ».');return;}
-    if(!ua){step(1,'failed');status('Откройте хост на PS4','Для PlayStation 4 с прошивкой 13.02, 13.04, 13.50, 13.52 или 14.00.');$('buttonHint').textContent='';$('launch').disabled=false;log('[HOST] Браузер PS4 не обнаружен. Запуск отключён.','warn');return;}
+    if(!ua){step(1,'failed');status('Откройте хост на PS4','Для поддерживаемых прошивок PS4 от 5.05 до 14.00.');$('buttonHint').textContent='';$('launch').disabled=false;log('[HOST] Браузер PS4 не обнаружен. Запуск отключён.','warn');return;}
     $('fwBadge').textContent='FW '+firmware;
-    if(!compatible){step(1,'failed');status('Прошивка не поддерживается','Обнаружена '+firmware+'. Этот комплект подготовлен только для PS4 13.02, 13.04, 13.50, 13.52 и 14.00.');notice('Не запускайте файлы от другой прошивки.','error');return;}
-    step(1,'done');step(2,'active');log('[HOST] Обнаружена PS4 с прошивкой '+firmware+'.','good');
+    if(!compatible){step(1,'failed');status('Прошивка не поддерживается','Обнаружена '+firmware+'. Для этой версии нет подходящего модуля в комплекте.');notice('Не запускайте файлы от другой прошивки.','error');return;}
+    step(1,'done');step(2,'active');log('[HOST] Обнаружена PS4 с прошивкой '+firmware+'. Модуль: '+(original?'MCFORT9669':lapse?'Lapse':poops?'Poops':'WebKitty')+'.','good');
     if(!cache){status('Офлайн-кэш недоступен','Браузер не предоставил AppCache. Установка офлайн-хоста не подтверждена.');notice('Откройте страницу в штатном браузере PS4. Если AppCache недоступен, этот комплект нельзя считать сохранённым офлайн.','error');step(2,'failed');return;}
     if(cache.status===1)cacheReady('[CACHE] Найден сохранённый офлайн-хост.');
     else if(cache.status===4){status('Обновление кэша готово','Закройте и снова откройте браузер.');notice('Новая версия загружена. Перезапустите браузер.');try{cache.swapCache();}catch(e){log('[CACHE] '+e.message,'warn');}}

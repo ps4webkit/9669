@@ -2,6 +2,14 @@
   Content-Type: text/cache-manifest; charset=utf-8
   Cache-Control: no-cache, must-revalidate
 
+/rawgame4/cache.appcache
+  Content-Type: text/cache-manifest; charset=utf-8
+  Cache-Control: no-cache, must-revalidate
+
+/webkitty/includes/caches/manifest/*
+  Content-Type: text/cache-manifest; charset=utf-8
+  Cache-Control: no-cache, must-revalidate
+
 /engine/*.js
   Content-Type: application/javascript; charset=utf-8
 
