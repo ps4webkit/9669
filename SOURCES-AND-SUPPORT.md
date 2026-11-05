@@ -49,3 +49,7 @@ is not listed for it.
 ## v11.4 — RawGame4 report
 
 The report no longer treats the intermediate `REPAIRED -- tearing down...` state as a completed failure. RawGame4 reports now retain the earlier `STEP4D-FAILED` or proof error instead of merely showing a later summary. On 11.00, a safe completed failure offers a link to the bundled WebKitty module. Exploit primitives and firmware offsets were not changed; actual reliability needs console test.
+
+## v11.5 — firmware 11.00 trial route
+
+FW 11.00 uses bundled WebKitty by default. On the first v11.5 launch it selects CSSFontFace + Netctrl and GoldHEN v2.4b18.13; later selections within WebKitty are respected. The user may choose the existing RawGame4 Lapse route in Settings. This changes only routing and UI, not the kernel exploits. Neither route can be claimed more reliable without actual hardware test; reports should include the selected route. Other firmware routes remain unchanged.

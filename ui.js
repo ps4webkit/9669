@@ -67,6 +67,16 @@
       // statistics must not record a successful or failed attempt without proof.
       started=true;
       var target=lapse?'rawgame4/run_lapse.html':poops?'rawgame4/run_poops.html':'webkitty/index.html?source=mcfort9669';
+      if(legacy&&firmware==='11.00'){
+        try{
+          // On the first v11.5 launch use a different chain from RawGame4's SlopKit Lapse.
+          // A later choice made inside WebKitty remains under the user's control.
+          if(localStorage.getItem('mcfort9669.1100.webkitty.pref.v11.5')!=='set'){
+            localStorage.setItem('exploitChain','3'); // CSSFontFace + Netctrl
+            localStorage.setItem('mcfort9669.1100.webkitty.pref.v11.5','set');
+          }
+        }catch(e){}
+      }
       if(lapse||poops){try{sessionStorage.setItem('mcfort9669.route.once',target);}catch(e){started=false;notice('Не удалось подготовить запуск модуля: хранилище браузера недоступно.','error');return;}}
       location.href=target;
       return;
