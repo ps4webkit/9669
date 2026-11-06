@@ -65,3 +65,7 @@ The tester confirmed successful WebKitty CSSFontFace + Lapse runs on 11.00 (3 su
 ## v11.8 — restore tested retry flow
 
 FW 11.00 v11.7 disabled WebKitty auto-retry and persisted that disabled value. This prevented the tester’s previously working reload/retry sequence after a PS4 memory error. The upstream retry behavior has been restored; a one-time migration re-enables the setting without triggering a retry on initial page load. WebKitty intentionally keeps `user.blockJailbreak` set after a click, so same-page clicks do not rerun the exploit. The custom report dialog remains removed. No kernel exploit or payload bytes changed.
+
+## v11.9 — experimental unified UI on FW 11.00
+
+The default WebKitty route is embedded in an offscreen full-size iframe and relays CSSFontFace/Lapse progress and completion to the main host screen. WebKitty's own caching and retry are preserved. This changes the browser execution context; PS4 hardware validation is required before replacing the established v11.8 deployment. The RawGame4 alternate 11.00 route still uses its own screen.
